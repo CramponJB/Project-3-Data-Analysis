@@ -5,21 +5,21 @@ from math import sqrt
 
 ### Constant
 
-Lx=60
-Ly=60
+Lx=60 #m
+Ly=60 #m
 #Nx=200
 #Ny=200
 dx=1
 dy=1
-Nx = round(Lx/dx)
-Ny = round(Ly/dy)
+Nx = round(Lx/dx)#nb d'itérations selon x
+Ny = round(Ly/dy)# // selon y
 
 dt=1
 tfinal=10000
-Nt=int(tfinal//dt)
+Nt=int(tfinal//dt)#// dans le temps
 
 alpha=5e-3
-T0=10
+T0=10#degres C
 Q=0.2
 bc=[0,0,0,0] # border (right, up, left, down)
 
@@ -35,26 +35,26 @@ result=np.zeros((Nx,Ny,3))
 
  
 #Calculating the temperature profile timestep by timestep
-for k in range(1,Nt+1):
+for k in range(1,Nt+1): #pour chaque itérations de temps (100 000)
     
     for x in range(1,Nx-1):
-        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 
-        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4
+        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 #ok
+        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4 #ok
         
     for y in range(1,Ny-1):
-        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 
-        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 
+        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 #ok
+        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 #ok
         
-    T[0,0] = (Told[1,0]+Told[0,1])/2
-    T[-1,0] = (Told[-1,1]+Told[-2,0])/2
-    T[0,-1] = (Told[0,-2]+Told[1,-1])/2
-    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2
+    T[0,0] = (Told[1,0]+Told[0,1])/2 #ok
+    T[-1,0] = (Told[-1,1]+Told[-2,0])/2 #ok
+    T[0,-1] = (Told[0,-2]+Told[1,-1])/2 #ok
+    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2 #ok
 
     for x in range(1,Nx-1):
         for y in range(1,Ny-1):
             
-            K =T[x+1,y]+T[x-1,y]+T[x,y+1]+T[x,y-1] - 4*T[x,y]
-            T[x,y]= Told[x,y] + alpha*dt*K/(dx*dy)
+            K =T[x+1,y]+T[x-1,y]+T[x,y+1]+T[x,y-1] - 4*T[x,y] #ok
+            T[x,y]= Told[x,y] + alpha*dt*K/(dx*dy) 
             
             if abs(x-borehole[0])<dx and abs(y-borehole[1])<dy:
                 T[x,y] += Q*dt
