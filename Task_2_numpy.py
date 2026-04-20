@@ -14,10 +14,9 @@ Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
 dt=0.1
-tfinal=3000
+tfinal=1500
 Nt=int(tfinal//dt)
 
-alpha=5e-3
 T0=10
 Q=1
 bc=[0,0,0,0] # border (right, up, left, down)
@@ -34,6 +33,12 @@ def vx(x):
 def vy(y):
     return 0.02*(y-20) 
 
+x_coords = np.arange(Nx) * dx
+y_coords = np.arange(Ny) * dy
+
+vx_field = vx(x_coords)[:, None]
+vy_field = vy(y_coords)[None, :]
+
 ### Initialisation
 
 
@@ -43,22 +48,7 @@ result=np.zeros((Nx,Ny,3))
  
 #Calculating the temperature profile timestep by timestep
 for k in range(Nt):
-    
-    for x in range(1,Nx-1):
-        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 
-        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4
-        
-    for y in range(1,Ny-1):
-        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 
-        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 
-        
-    T[0,0] = (Told[1,0]+Told[0,1])/2
-    T[-1,0] = (Told[-1,1]+Told[-2,0])/2
-    T[0,-1] = (Told[0,-2]+Told[1,-1])/2
-    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2
 
-    vx_field = vx(np.arange(Nx))[:, None]      # shape (Nx, 1)
-    vy_field = vy(np.arange(Ny))[None, :]      # shape (1, Ny)
     
     # upwind x
     dTdx = np.where(
@@ -77,18 +67,34 @@ for k in range(Nt):
     T = Told - dt * (vx_field * dTdx + vy_field * dTdy)
             
     T[ix, iy] += Q * dt
+    
+    for x in range(1,Nx-1):
+        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 
+        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4
+        
+    for y in range(1,Ny-1):
+        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 
+        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 
+        
+    T[0,0] = (Told[1,0]+Told[0,1])/2
+    T[-1,0] = (Told[-1,1]+Told[-2,0])/2
+    T[0,-1] = (Told[0,-2]+Told[1,-1])/2
+    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2
 
     Told=T.copy()
 
     if k%100==0:
-        print(k)
+        print(k*dt)
         #print(T)
-        if round(k*dt)==200:
-            result[:,:,0]=T
-        if round(k*dt)==500:
-            result[:,:,1]=T
-        if round(k*dt)== 1000:
-            result[:,:,2]=T
+    if abs(k*dt - 200) < dt:
+        result[:,:,0]=T
+        #print("T200=",T)
+    if abs(k*dt - 500) < dt:
+        result[:,:,1]=T
+        #print("T500=",T)
+    if abs(k*dt - 1000) < dt:
+        result[:,:,2]=T
+        #print("T1000=",T)
 
         
 ###Plotting the result
