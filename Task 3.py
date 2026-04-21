@@ -1,24 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-
+from matplotlib.colors import LogNorm
+ 
 ### Constant
 
 Lx=60
 Ly=60
 #Nx=200
 #Ny=200
-dx=0.5
-dy=0.5
+dx=0.3
+dy=0.3
 Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
 dt=0.1
-tfinal=1500
+tfinal=5000
 Nt=int(tfinal//dt)
 
 T0=10
-Q=0.2
+Q=5
+alpha=5e-3
+
 bc=[0,0,0,0] # border (right, up, left, down)
 
 borehole=[30,30]
@@ -39,32 +42,45 @@ y_coords = np.arange(Ny) * dy
 vx_field = vx(x_coords)[:, None]
 vy_field = vy(y_coords)[None, :]
 
-### Initialisation
+K = alpha*dt/(dx*dy)
+vx2 = vx_field*dt/dx
+vy2 = vy_field*dt/dy
 
+vx_pos = np.maximum(vx2, 0) 
+vx_neg = np.minimum(vx2, 0)
+vy_pos = np.maximum(vy2, 0)
+vy_neg = np.minimum(vy2, 0)
+
+
+### Initialisation
 
 Told=np.zeros((Nx,Ny))+T0
 T=np.zeros((Nx,Ny))
-result=np.zeros((Nx,Ny,3))
+
+# Calculer les valeurs max
+vx_max = np.max(np.abs(vx_field))
+vy_max = np.max(np.abs(vy_field))
+
+CFL = (vx_max * dt/dx) + (vy_max * dt/dy)
+print(f"CFL = {CFL}, doit être < 1")
+
+if CFL >= 1:
+    print(f"ATTENTION : réduire dt à {0.9*dx/vx_max}")
  
 #Calculating the temperature profile timestep by timestep
 for k in range(Nt):
 
     
-    # upwind x
-    dTdx = np.where(
-        vx_field > 0,
-        (Told - np.roll(Told, 1, axis=0)) / dx,
-        (np.roll(Told, -1, axis=0) - Told) / dx
-    )
+    T = Told*(1-4*K) + K*(np.roll(Told, 1, axis=0) + np.roll(Told, -1, axis=0) 
+                          + np.roll(Told, 1, axis=1) + np.roll(Told, -1, axis=1))
     
-    # upwind y
-    dTdy = np.where(
-        vy_field > 0,
-        (Told - np.roll(Told, 1, axis=1)) / dy,
-        (np.roll(Told, -1, axis=1) - Told) / dy
-    )
     
-    T = Told - dt * (vx_field * dTdx + vy_field * dTdy)
+    T = T - vx_pos * (Told - np.roll(Told, 1, axis=0))  # Dérivée arrière si vx > 0
+    T = T - vx_neg * (np.roll(Told, -1, axis=0) - Told)  # Dérivée avant si vx < 0
+    
+
+    T = T - vy_pos * (Told - np.roll(Told, 1, axis=1))
+    T = T - vy_neg * (np.roll(Told, -1, axis=1) - Told)
             
     T[ix, iy] += Q * dt
     
@@ -86,24 +102,10 @@ for k in range(Nt):
     if k%100==0:
         print(k*dt)
         #print(T)
-    if abs(k*dt - 200) < dt:
-        result[:,:,0]=T
-        #print("T200=",T)
-    if abs(k*dt - 500) < dt:
-        result[:,:,1]=T
-        #print("T500=",T)
-    if abs(k*dt - 1000) < dt:
-        result[:,:,2]=T
-        #print("T1000=",T)
 
         
 ###Plotting the result
-##
 
-fig=plt.figure()
-
-    
-#Creating vexctors with the x and y values of the grid and plotting the result
 x=np.linspace(0,Lx,Nx)
 y=np.linspace(0,Ly,Ny)
 Y, X = np.meshgrid(y, x)
@@ -116,36 +118,20 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 plt.show()
 
-fig=plt.figure()
-
-    
+###     Echelle de couleur logarithmique
+"""
 #Creating vexctors with the x and y values of the grid and plotting the result
 x=np.linspace(0,Lx,Nx)
 y=np.linspace(0,Ly,Ny)
 Y, X = np.meshgrid(y, x)
 
-
-vmin = np.min(result[:, :, :3])
-vmax = np.max(result[:, :, :3])
-levels = np.linspace(vmin, vmax, 21)
-
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-
-t=[200,500,1000]
-
-for i in range(3):
-    ax = axes[i]
-    surf = ax.contourf(X, Y, result[:, :, i], levels=levels, cmap=cm.coolwarm)
-    
-
-    
-    ax.set_title("t = " + str(t[i]) + " s")
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-
-cbar = fig.colorbar(surf, ax=axes.ravel().tolist(),
-                    orientation='horizontal', pad=0.15, shrink=0.9)
-
-
-plt.tight_layout()
+fig, ax=plt.subplots() 
+surf = ax.contourf(X, Y, T,
+                   levels=100,
+                   norm=LogNorm(vmin=T.min()+1e-6, vmax=T.max()),
+                   cmap=cm.coolwarm)
+bar=fig.colorbar(surf, shrink=0.5, aspect=5)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
 plt.show()
+"""
