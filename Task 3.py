@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 21 21:50:22 2026
+
+@author: jeanb
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -9,17 +16,16 @@ Lx=60
 Ly=60
 #Nx=200
 #Ny=200
-dx=0.3
-dy=0.3
+dx=dy=0.3
 Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
 dt=0.1
-tfinal=5000
+tfinal=10000
 Nt=int(tfinal//dt)
 
 T0=10
-Q=5
+Q=0.2
 alpha=5e-3
 
 bc=[0,0,0,0] # border (right, up, left, down)
@@ -57,8 +63,12 @@ vy_neg = np.minimum(vy2, 0)
 Told=np.zeros((Nx,Ny))+T0
 T=np.zeros((Nx,Ny))
 
- 
+
 #Calculating the temperature profile timestep by timestep
+
+target_times = [2000, 5000, 10000]
+results = []
+
 for k in range(Nt):
 
     
@@ -75,39 +85,39 @@ for k in range(Nt):
             
     T[ix, iy] += Q * dt
     
-    for x in range(1,Nx-1):
-        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 
-        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4
-        
-    for y in range(1,Ny-1):
-        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 
-        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 
-        
-    T[0,0] = (Told[1,0]+Told[0,1])/2
-    T[-1,0] = (Told[-1,1]+Told[-2,0])/2
-    T[0,-1] = (Told[0,-2]+Told[1,-1])/2
-    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2
+    T[0,  :]  = T[1,  :]    # bord gauche
+    T[-1, :]  = T[-2, :]    # bord droit
+    T[:,  0]  = T[:,  1]    # bord bas
+    T[:, -1]  = T[:, -2]    # bord haut
 
     Told=T.copy()
+    
+    # SAVE RESULTs
+    if int(k*dt) in target_times:
+        results.append(T.copy())
 
-    if k%100==0:
-        print(k*dt)
-        #print(T)
+    if k%1000==0:
+            print("t =", k*dt, "s")
 
         
 ###Plotting the result
 
-x=np.linspace(0,Lx,Nx)
-y=np.linspace(0,Ly,Ny)
+x = np.linspace(0, Lx, Nx)
+y = np.linspace(0, Ly, Ny)
 Y, X = np.meshgrid(y, x)
 
-T_levels=np.linspace(9.9,np.amax(T),21)
-fig, ax=plt.subplots() 
-surf=ax.contourf(X,Y,T,levels=T_levels,cmap=cm.coolwarm)
-bar=fig.colorbar(surf, shrink=0.5, aspect=5)
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
+titles = ["t = 2000 s", "t = 5000 s", "t = 10000 s"]
+
+for i in range(3):
+    T = results[i]
+    T_levels = np.linspace(9.9, np.amax(T), 21)
+    fig, ax = plt.subplots()
+    surf = ax.contourf(X, Y, T, levels=T_levels, cmap=cm.coolwarm)
+    bar = fig.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_title(titles[i])
+    plt.show()
 
 ###     Echelle de couleur logarithmique
 """
