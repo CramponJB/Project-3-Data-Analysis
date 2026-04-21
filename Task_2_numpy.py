@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 21 21:19:08 2026
+
+@author: jeanb
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -8,13 +15,12 @@ Lx=60
 Ly=60
 #Nx=200
 #Ny=200
-dx=0.5
-dy=0.5
+dx=dy=0.3
 Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
 dt=0.1
-tfinal=1500
+tfinal=10000
 Nt=int(tfinal//dt)
 
 T0=10
@@ -68,23 +74,15 @@ for k in range(Nt):
             
     T[ix, iy] += Q * dt
     
-    for x in range(1,Nx-1):
-        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4
-        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4
-        
-    for y in range(1,Ny-1):
-        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4
-        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4
-        
-    T[0,0] = (Told[1,0]+Told[0,1])/2
-    T[-1,0] = (Told[-1,1]+Told[-2,0])/2
-    T[0,-1] = (Told[0,-2]+Told[1,-1])/2
-    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2
+    T[0,  :]  = T[1,  :]    # bord gauche
+    T[-1, :]  = T[-2, :]    # bord droit
+    T[:,  0]  = T[:,  1]    # bord bas
+    T[:, -1]  = T[:, -2]    # bord haut
 
     Told=T.copy()
 
-    if k%100==0:
-        print(k*dt)
+    if k%10000==0:
+            print("t =", k*dt, "s")
         #print(T)
     if abs(k*dt - 200) < dt:
         result[:,:,0]=T
