@@ -117,7 +117,7 @@ for i in range(3):
     ax.set_title("t = " + str(t[i]) + " s")
     ax.set_xlabel("x")
     ax.set_ylabel("y")
-
+    
 cbar = fig.colorbar(surf, ax=axes.ravel().tolist(),
                     orientation='horizontal', pad=0.15, shrink=0.9)
 
