@@ -15,11 +15,10 @@ Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
 dt=0.1
-tfinal=5000
+tfinal=3000
 Nt=int(tfinal//dt)
 
 T0=10
-Q=5
 alpha=5e-3
 
 bc=[0,0,0,0] # border (right, up, left, down)
@@ -51,12 +50,12 @@ vx_neg = np.minimum(vx2, 0)
 vy_pos = np.maximum(vy2, 0)
 vy_neg = np.minimum(vy2, 0)
 
+Q= 0.15*np.random.randn(Nt)
 
 ### Initialisation
 
 Told=np.zeros((Nx,Ny))+T0
 T=np.zeros((Nx,Ny))
-
  
 #Calculating the temperature profile timestep by timestep
 for k in range(Nt):
@@ -72,8 +71,9 @@ for k in range(Nt):
 
     T = T - vy_pos * (Told - np.roll(Told, 1, axis=1))
     T = T - vy_neg * (np.roll(Told, -1, axis=1) - Told)
-            
-    T[ix, iy] += Q * dt
+    
+  
+    T[ix, iy] += Q[k] * dt
     
     for x in range(1,Nx-1):
         T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 
@@ -96,7 +96,7 @@ for k in range(Nt):
 
         
 ###Plotting the result
-
+"""
 x=np.linspace(0,Lx,Nx)
 y=np.linspace(0,Ly,Ny)
 Y, X = np.meshgrid(y, x)
@@ -108,9 +108,9 @@ bar=fig.colorbar(surf, shrink=0.5, aspect=5)
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 plt.show()
-
-###     Echelle de couleur logarithmique
 """
+###     Echelle de couleur logarithmique
+
 #Creating vexctors with the x and y values of the grid and plotting the result
 x=np.linspace(0,Lx,Nx)
 y=np.linspace(0,Ly,Ny)
@@ -125,4 +125,5 @@ bar=fig.colorbar(surf, shrink=0.5, aspect=5)
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 plt.show()
-"""
+
+
