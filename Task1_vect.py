@@ -9,8 +9,7 @@ Lx=60 #m
 Ly=60 #m
 #Nx=200
 #Ny=200
-dx=1
-dy=1
+dx=dy=1
 Nx = round(Lx/dx)#nb d'itérations selon x
 Ny = round(Ly/dy)# // selon y
 
@@ -24,6 +23,9 @@ Q=0.2
 bc=[0,0,0,0] # border (right, up, left, down)
 
 borehole=[30,30]
+
+ix = int(borehole[0] / dx)
+iy = int(borehole[1] / dy)
 
 ### Initialisation
 
@@ -47,27 +49,50 @@ for k in range(1,Nt+1): #pour chaque itérations de temps (100 000)
     T[-1,0] = (Told[-1,1]+Told[-2,0])/2 #ok
     T[0,-1] = (Told[0,-2]+Told[1,-1])/2 #ok
     T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2 #ok
-
-    for x in range(1,Nx-1):
-        for y in range(1,Ny-1):
-            
-            K =Told[x+1,y]+Told[x-1,y]+Told[x,y+1]+Told[x,y-1] - 4*Told[x,y] #ok
-            T[x,y]= Told[x,y] + alpha*dt*K/(dx**2) 
-            
-            if abs(x*dx-borehole[0])<dx and abs(y*dy-borehole[1])<dy:
-                T[x,y] += Q*dt
-
+    
+    K = (
+        Told[2:,1:-1] +
+        Told[:-2,1:-1] +
+        Told[1:-1,2:] +
+        Told[1:-1,:-2] -
+        4*Told[1:-1,1:-1]
+    )
+    
+    T[1:-1,1:-1] = Told[1:-1,1:-1] + alpha*dt*K/(dx**2)
+    
+    T[ix, iy] += Q * dt  
+    
     Told=T.copy()
+        
     if round(k*dt)==2000:
         result[:,:,0]=T
     if round(k*dt)==5000:
         result[:,:,1]=T
     if round(k*dt)== 10000:
         result[:,:,2]=T
-    
     if k%100==0:
-        print(k)
+        print(k*dt)
         
+eps = 0.05  # seuil de température
+
+X, Y = np.meshgrid(np.linspace(0, Lx, Nx),
+                   np.linspace(0, Ly, Ny))
+
+# distance au borehole
+dist = np.sqrt((X - borehole[0])**2 + (Y - borehole[1])**2)
+
+# zones "chaudes"
+mask = (T - T0) > eps
+
+# plume radius = distance max dans la zone chaude
+if np.any(mask):
+    plume_radius = np.max(dist[mask])
+else:
+    plume_radius = 0
+
+print("Plume radius:", plume_radius)
+    
+
 ###Plotting the result
 ##
 
@@ -105,7 +130,6 @@ for i in range(3):
 
 cbar = fig.colorbar(surf, ax=axes.ravel().tolist(),
                     orientation='horizontal', pad=0.15, shrink=0.9)
-
 
 plt.tight_layout()
 plt.show()
