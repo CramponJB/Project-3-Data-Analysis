@@ -27,13 +27,11 @@ borehole=[30,30]
 
 ### Initialisation
 
-
 Told=np.zeros((Nx,Ny))+T0
 T=np.zeros((Nx,Ny))
 
 result=np.zeros((Nx,Ny,3))
 
- 
 #Calculating the temperature profile timestep by timestep
 for k in range(1,Nt+1): #pour chaque itérations de temps (100 000)
     
@@ -53,10 +51,10 @@ for k in range(1,Nt+1): #pour chaque itérations de temps (100 000)
     for x in range(1,Nx-1):
         for y in range(1,Ny-1):
             
-            K =T[x+1,y]+T[x-1,y]+T[x,y+1]+T[x,y-1] - 4*T[x,y] #ok
+            K =Told[x+1,y]+Told[x-1,y]+Told[x,y+1]+Told[x,y-1] - 4*Told[x,y] #ok
             T[x,y]= Told[x,y] + alpha*dt*K/(dx*dy) 
             
-            if abs(x-borehole[0])<dx and abs(y-borehole[1])<dy:
+            if abs(x*dx-borehole[0])<dx and abs(y*dy-borehole[1])<dy:
                 T[x,y] += Q*dt
 
     Told=T.copy()
