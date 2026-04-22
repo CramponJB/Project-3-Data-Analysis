@@ -48,7 +48,7 @@ y_coords = np.arange(Ny) * dy
 vx_field = vx(x_coords)[:, None]
 vy_field = vy(y_coords)[None, :]
 
-K = alpha*dt/(dx*dy)
+K = alpha*dt/(dx**2)
 vx2 = vx_field*dt/dx
 vy2 = vy_field*dt/dy
 
