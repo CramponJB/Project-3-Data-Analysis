@@ -121,5 +121,4 @@ for i in range(3):
 cbar = fig.colorbar(surf, ax=axes.ravel().tolist(),
                     orientation='horizontal', pad=0.15, shrink=0.9)
 
-plt.tight_layout()
 plt.show()
