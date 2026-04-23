@@ -78,10 +78,18 @@ for k in range(Nt):
             
     T[ix, iy] += Q * dt
     
-    T[0,  :]  = T[1,  :]    # bord gauche
-    T[-1, :]  = T[-2, :]    # bord droit
-    T[:,  0]  = T[:,  1]    # bord bas
-    T[:, -1]  = T[:, -2]    # bord haut
+    for x in range(1,Nx-1):
+        T[x,0] = (Told[x-1,0]+Told[x+1,0]+ 2*Told[x,1] - 2*dx*bc[2])/4 #ok
+        T[x,-1] = (Told[x-1,-1]+Told[x+1,-1]+ 2*Told[x,-2] - 2*dx*bc[0])/4 #ok
+        
+    for y in range(1,Ny-1):
+        T[0,y] = (Told[0,y+1]+Told[0,y-1]+ 2*Told[1,y] - 2*dx*bc[3])/4 #ok
+        T[-1,y] = (Told[-1,y+1]+Told[-1,y-1]+ 2*Told[-2,y] - 2*dx*bc[1])/4 #ok
+        
+    T[0,0] = (Told[1,0]+Told[0,1])/2 #ok
+    T[-1,0] = (Told[-1,1]+Told[-2,0])/2 #ok
+    T[0,-1] = (Told[0,-2]+Told[1,-1])/2 #ok
+    T[-1,-1] = (Told[-1,-2]+Told[-2,-1])/2 #ok
 
     Told=T.copy()
 
