@@ -33,6 +33,8 @@ x0, y0 = borehole
 ix = int(x0 / dx)
 iy = int(y0 / dy)
 
+bc=[0,0,0,0] # border (right, up, left, down)
+
 def vx(x):
     return 0.02*(x +20)+0.01 
 
