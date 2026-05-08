@@ -7,9 +7,7 @@ Created on Thu Apr 23 16:18:11 2026
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.colors import LogNorm
- 
+
 ### Constant
 
 Lx=60
@@ -21,7 +19,7 @@ dy=0.3
 Nx = round(Lx/dx)
 Ny = round(Ly/dy)
 
-dt=0.15
+dt=0.1
 tfinal=10000
 Nt=int(tfinal//dt)
 
@@ -102,20 +100,6 @@ for k in range(Nt):
 
         
 ###Plotting the result
-"""
-x=np.linspace(0,Lx,Nx)
-y=np.linspace(0,Ly,Ny)
-Y, X = np.meshgrid(y, x)
-
-T_levels=np.linspace(9.9,np.amax(T),21)
-fig, ax=plt.subplots() 
-surf=ax.contourf(X,Y,T,levels=T_levels,cmap=cm.coolwarm)
-bar=fig.colorbar(surf, shrink=0.5, aspect=5)
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
-"""
-###     Echelle de couleur logarithmique
 import numpy as np
 
 x = np.linspace(0, Lx, Nx)

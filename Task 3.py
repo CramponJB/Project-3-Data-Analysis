@@ -128,21 +128,3 @@ for i in range(3):
     ax.set_ylabel('y')
     ax.set_title(titles[i])
     plt.show()
-
-###     Echelle de couleur logarithmique
-"""
-#Creating vexctors with the x and y values of the grid and plotting the result
-x=np.linspace(0,Lx,Nx)
-y=np.linspace(0,Ly,Ny)
-Y, X = np.meshgrid(y, x)
-
-fig, ax=plt.subplots() 
-surf = ax.contourf(X, Y, T,
-                   levels=100,
-                   norm=LogNorm(vmin=T.min()+1e-6, vmax=T.max()),
-                   cmap=cm.coolwarm)
-bar=fig.colorbar(surf, shrink=0.5, aspect=5)
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-plt.show()
-"""
